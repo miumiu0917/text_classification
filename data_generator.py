@@ -19,11 +19,17 @@ def main():
   money_first = read_from_file('data/candidate/money_first.txt')
   money_last = read_from_file('data/candidate/money_last.txt')
   with open('data/raw.csv', 'w') as f:
-    writer = csv.writer(f, lineterminator='\n')
-    for _ in range(50000):
-      category, money_ = money()
-      text = random.choice(first) + random.choice(money_first) + money_ + random.choice(money_last) + random.choice(last)
-      writer.writerow([category, text])
+    with open('data/train.csv', 'w') as train:
+      with open('data/test.csv', 'w') as test:
+        writer_f = csv.writer(f, lineterminator='\n')
+        writer_train = csv.writer(train, lineterminator='\n')
+        writer_test = csv.writer(test, lineterminator='\n')
+        for i in range(50000):
+          category, money_ = money()
+          text = random.choice(first) + random.choice(money_first) + money_ + random.choice(money_last) + random.choice(last)
+          writer_f.writerow([category, text])
+          writer_train.writerow([category, text]) if i < 40000 else writer_test.writerow([category, text])
+          
 
 def money():
   category = random.choice(list(CATEGORY_DICT.keys()))
