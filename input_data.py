@@ -1,15 +1,17 @@
 import csv
+import random
 import numpy as np
 
 UNKNOWN_ID = 0
 UNKNOWN = 'UNK_'
-NUM_CATEGORY = 6
 
 class InputData(object):
 
-  def __init__(self, batch_size=64):
+  def __init__(self, batch_size=64, num_category=6):
+    self.num_category = num_category
     self.batch_size = batch_size
     self.chars_dict = self.__create_char_dict()
+    self.num_chars = len(list(self.chars_dict.keys()))
     self.max_len = self.__max_len()
     self.train_data = self.__read_data('data/train.csv')
     test_data = self.__read_data('data/test.csv')
@@ -38,7 +40,9 @@ class InputData(object):
     with open(data_path, 'r') as f:
       reader = csv.reader(f)
       for line in reader:
-        data.append([line[0], len(line[1]), line[1]])
+        ids = [self.chars_dict[c] for c in list(line[1])]
+        ids = ids + [0 for _ in range(self.max_len - len(ids))]
+        data.append([line[0], len(line[1]), ids])
     return data
 
 
@@ -61,13 +65,13 @@ class InputData(object):
       random.shuffle(self.train_data)
     batch = self.train_data[self.idx:self.idx+self.batch_size]
     labels = [self.__one_hot_vector(e[0]) for e in batch]
-    lens = [len(e[1]) for e in batch]
-    texts = [e[1] for e in batch]
+    lens = [e[1] for e in batch]
+    texts = [e[2] for e in batch]
     self.idx += self.batch_size
     return labels, lens, texts
   
 
   def __one_hot_vector(self, index):
-    one_hot = np.zeros(NUM_CATEGORY)
+    one_hot = np.zeros(self.num_category)
     one_hot[int(index)] = 1
     return one_hot

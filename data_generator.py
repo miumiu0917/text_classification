@@ -40,6 +40,7 @@ def read_from_file(file_path):
   with open(file_path, 'r') as f:
     return [line.rstrip("\n") for line in f]
 
+
 def convert(money):
   fifty_fifty = lambda: random.randint(0,1) % 2 == 0
   comma = lambda s: "{:,}".format(int(money))
