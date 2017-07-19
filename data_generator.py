@@ -28,7 +28,7 @@ def main():
           category, money_ = money()
           text = random.choice(first) + random.choice(money_first) + money_ + random.choice(money_last) + random.choice(last)
           writer_f.writerow([category, text])
-          writer_train.writerow([category, text]) if i < 40000 else writer_test.writerow([category, text])
+          writer_train.writerow([category, text]) if i < 45000 else writer_test.writerow([category, text])
           
 
 def money():

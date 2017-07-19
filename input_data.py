@@ -7,16 +7,21 @@ UNKNOWN = 'UNK_'
 
 class InputData(object):
 
-  def __init__(self, batch_size=64, num_category=6):
+  def __init__(self, batch_size=64, num_category=6, train=True):
     self.num_category = num_category
     self.batch_size = batch_size
-    self.chars_dict = self.__create_char_dict()
+    if train:
+      self.chars_dict = self.__create_char_dict()
+    else:
+      self.chars_dict = self.__load_char_dict()
     self.num_chars = len(list(self.chars_dict.keys()))
     self.max_len = self.__max_len()
-    self.train_data = self.__read_data('data/train.csv')
-    test_data = self.__read_data('data/test.csv')
-    self.test_label, self.test_lens, self.test_text = self.__shaping_test_data(test_data)
-    self.idx = 0
+    # 以下はtrainモードのみ
+    if train:
+      self.train_data = self.__read_data('data/train.csv')
+      test_data = self.__read_data('data/test.csv')
+      self.test_label, self.test_lens, self.test_text = self.__shaping_test_data(test_data)
+      self.idx = 0
     
 
   def __create_char_dict(self):
@@ -35,16 +40,27 @@ class InputData(object):
     return {c:i for i, c in enumerate(chars)}
 
 
+  def __load_char_dict(self):
+    with open('data/chars.txt', 'r') as f:
+      return {c.rstrip("\n"):i for i, c in enumerate(f)}
+
   def __read_data(self, data_path):
     data = []
     with open(data_path, 'r') as f:
       reader = csv.reader(f)
       for line in reader:
-        ids = [self.chars_dict[c] for c in list(line[1])]
-        ids = ids + [0 for _ in range(self.max_len - len(ids))]
+        ids = self.sentence_to_vector(line[1])
         data.append([line[0], len(line[1]), ids])
     return data
 
+
+  def sentence_to_vector(self, sentence):
+    sentence = list(sentence)
+    sentence = [c if c in self.chars_dict else UNKNOWN for c in sentence]
+    ids = [self.chars_dict[c] for c in sentence]
+    ids = ids + [0 for _ in range(self.max_len - len(ids))]
+    return ids
+    
 
   def __max_len(self):
     with open('data/raw.csv', 'r') as f:
